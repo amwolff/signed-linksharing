@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <script src="https://sdk.amazonaws.com/js/aws-sdk-2.1058.0.min.js"></script>
+</head>
+
+<body>
+    <script>
+        function renderSigned(url, region, akid, sak) {
+            const request = new AWS.HttpRequest(url, region);
+
+            request.method = 'GET';
+
+            request.headers['Host'] = request.endpoint.host;
+
+            const options = {
+                signatureCache: true,
+                signatureVersion: 's3v4'
+            };
+
+            const signer = new AWS.Signers.V4(request, 'linksharing', options);
+
+            const credentials = {
+                accessKeyId: akid,
+                secretAccessKey: sak
+            };
+
+            signer.addAuthorization(credentials, new Date());
+
+            const cmd = [
+                'curl',
+                '-H', '\'Authorization: ' + request.headers['Authorization'] + '\'',
+                '-H', '\'Host: ' + request.headers['Host'] + '\'',
+                '-H', '\'X-Amz-Date: ' + request.headers['X-Amz-Date'] + '\'',
+                '-H', '\'X-Amz-User-Agent: ' + request.headers['X-Amz-User-Agent'] + '\'',
+                url
+            ];
+
+            const codeElement = document.createElement('code');
+            codeElement.innerHTML = cmd.join(' ');
+
+            const pElement = document.createElement('p');
+            pElement.append(codeElement);
+
+            document.body.append(pElement);
+        }
+    </script>
+
+    <form action="javascript:renderSigned(u.value, r.value, a.value, s.value)">
+        <label for="u">URL:</label><br>
+        <input type="url" id="u" name="u" placeholder="https://link.eu1.storjshare.io/raw/AKIAIOSFODNN7EXAMPLE/b/o" required><br><br>
+
+        <label for="r">Region:</label><br>
+        <input type="text" id="r" name="r" placeholder="eu1" required><br><br>
+
+        <label for="a">Access Key ID:</label><br>
+        <input type="text" id="a" name="a" placeholder="AKIAIOSFODNN7EXAMPLE" required><br><br>
+
+        <label for="s">Secret Access Key:</label><br>
+        <input type="password" id="s" name="s" placeholder="wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY" required><br><br>
+
+        <input type="submit" value="Submit">
+    </form>
+
+    <noscript>Sorry, your browser does not support JavaScript!</noscript>
+</body>
+
+</html>
